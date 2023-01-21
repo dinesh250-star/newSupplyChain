@@ -12,13 +12,15 @@ const db = mysql.createConnection({
 });
 app.post("/authentication", (req, res) => {
   const userAccount = req.body.userAccount;
-  console.log(userAccount);
   db.query(
     "SELECT * FROM users WHERE public_key = ?",
     [userAccount],
     (err, result) => {
-      console.log(result);
-      //route to register page
+      if (result.length > 0) {
+        res.send(result[0].role);
+      } else {
+        res.send("Register yourself or wait for approval");
+      }
     }
   );
 });

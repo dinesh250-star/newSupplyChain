@@ -31,7 +31,9 @@ function Welcome() {
       });
     }
   }, []);
-
+  const register = () => {
+    window.location.href = "http://localhost:3000/register";
+  };
   async function requestAccount() {
     if (window.ethereum) {
       console.log("detected");
@@ -44,6 +46,20 @@ function Welcome() {
 
         Axios.post("http://localhost:3001/authentication", {
           userAccount: accounts[0],
+        }).then((resp) => {
+          if (
+            resp.data != "farmer" &&
+            resp.data != "processor" &&
+            resp.data != "retailer" &&
+            resp.data != "consumer" &&
+            resp.data != "investor" &&
+            resp.data != "admin"
+          ) {
+            alert("Register yourself or wait for approval from admin");
+          } else {
+            dispatch(dbActions.role(resp));
+            window.location.href = `http://localhost:3000/${resp.data}`;
+          }
         });
 
         dispatch(dbActions.logIn());
@@ -62,7 +78,9 @@ function Welcome() {
       alert("No metamask Found");
     }
   };
-
+  const log = () => {
+    connectMetamask();
+  };
   return (
     <div>
       <body
@@ -102,8 +120,15 @@ function Welcome() {
                   which will help to produce and sell yields at a good rate
                 </p>
                 <div>
-                  <button className="btn btn-main-md" onClick={connectMetamask}>
+                  <button className="btn btn-main-md" onClick={log}>
                     LOG IN
+                  </button>
+                  &nbsp;&nbsp;
+                  {/* <button className="btn btn-main-md">SIGN UP</button> */}
+                </div>
+                <div>
+                  <button className="btn btn-main-md" onClick={register}>
+                    Register
                   </button>
                   &nbsp;&nbsp;
                   {/* <button className="btn btn-main-md">SIGN UP</button> */}

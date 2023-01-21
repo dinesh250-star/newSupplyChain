@@ -20,6 +20,9 @@ const dbSlice = createSlice({
     logIn(state, action) {
       state.loggedIn = true;
     },
+    role(state, action) {
+      state.role = action.payload;
+    },
   },
 });
 

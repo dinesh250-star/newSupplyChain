@@ -5,7 +5,7 @@ Server/node_modules
 SupplyChain-Frontend/node_modules
 /.pnp
 .pnp.js
-.env
+SupplyChain-Frontend/.env
 # testing
 /coverage
 

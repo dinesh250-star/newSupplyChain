@@ -7,12 +7,12 @@ const dbSlice = createSlice({
     userAcc: "",
     loggedIn: false,
     role: "",
-    count: 0,
-    reload: false,
+
+    reload: 0,
   },
   reducers: {
     reload(state, action) {
-      state.reload = true;
+      state.reload += 1;
     },
     userAccount(state, action) {
       state.userAcc = action.payload;

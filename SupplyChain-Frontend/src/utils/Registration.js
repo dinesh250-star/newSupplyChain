@@ -34,6 +34,7 @@ function Registration() {
     }).then((response) => {
       console.log(response.data);
       alert(response.data);
+      window.location.href = "http://localhost:3000";
     });
   };
   return (

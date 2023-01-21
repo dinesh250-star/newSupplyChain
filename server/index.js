@@ -41,7 +41,7 @@ app.post("/registration", (req, res) => {
           (err, result) => {
             if (result) {
               console.log("success");
-              res.send("Successfully regsitered");
+              res.send("Successfully regsitered. Now wait for approval");
             }
           }
         );
@@ -58,6 +58,32 @@ app.get("/verify", (req, res) => {
         res.send(result);
       } else {
         res.send(false);
+      }
+    }
+  );
+});
+app.delete("/reject/:id", (req, res) => {
+  const id = req.params["id"];
+  console.log(id);
+  db.query("DELETE  FROM users WHERE id = ?", [id], (err, result) => {
+    if (result) {
+      res.send("Deleted Successfully");
+    } else {
+      res.send("Unable to Delete");
+    }
+  });
+});
+app.put("/approve/:id", (req, res) => {
+  const id = req.params["id"];
+  console.log(id);
+  db.query(
+    "UPDATE  users SET role_status = ? WHERE id = ?",
+    ["approved", id],
+    (err, result) => {
+      if (result) {
+        res.send("Successfully Updated");
+      } else {
+        res.send("Unable to update");
       }
     }
   );

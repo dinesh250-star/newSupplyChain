@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import "../css/Registration.css";
 import block from "../images/logo-ct.png";
 import Axios from "axios";
+import { useNavigate } from "react-router-dom";
 function Registration() {
+  const navigate = useNavigate();
   const [userAccount, setUserAccount] = useState("");
   const [name, setName] = useState("");
   const [no, setNo] = useState("");
@@ -34,7 +36,7 @@ function Registration() {
     }).then((response) => {
       console.log(response.data);
       alert(response.data);
-      window.location.href = "http://localhost:3000";
+      navigate("/");
     });
   };
   return (

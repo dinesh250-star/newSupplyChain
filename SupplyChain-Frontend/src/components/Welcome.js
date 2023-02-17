@@ -16,11 +16,12 @@ import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import Axios from "axios";
 import { dbActions } from "../store/dbSlice";
+import { Link, useNavigate } from "react-router-dom";
 
 function Welcome() {
   const [userAccount, setUserAccount] = useState("");
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   useEffect(() => {
     if (window.ethereum) {
       window.ethereum.on("chainChanged", () => {
@@ -32,7 +33,7 @@ function Welcome() {
     }
   }, []);
   const register = () => {
-    window.location.href = "http://localhost:3000/register";
+    navigate("/register");
   };
   async function requestAccount() {
     if (window.ethereum) {
@@ -57,8 +58,8 @@ function Welcome() {
           ) {
             alert("Register yourself or wait for approval from admin");
           } else {
-            dispatch(dbActions.role(resp));
-            window.location.href = `http://localhost:3000/${resp.data}`;
+            dispatch(dbActions.role(resp.data));
+            navigate(`${resp.data}`);
           }
         });
 

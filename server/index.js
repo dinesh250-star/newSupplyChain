@@ -51,10 +51,88 @@ app.post("/registration", (req, res) => {
     }
   );
 });
+app.post("/offer/:idd", (req, res) => {
+  const id = req.params["idd"];
+  const cropId = req.body.id;
+  const seller = req.body.name;
+  const userAccount = req.body.user;
+  const crop = req.body.crop;
+  const quantity = req.body.quantity;
+  const price = req.body.price;
+  const priceC = req.body.priceC;
+  db.query(
+    "INSERT INTO offers (buyer,seller,price,crop_id,crop_name,quantity,bid_price) VALUES(?,?,?,?,?,?,?)",
+    [userAccount, seller, price, id, crop, quantity, priceC],
+    (err, result) => {
+      if (result) {
+        res.send("Successfully Bidded");
+      }
+    }
+  );
+});
+app.post("/farmerbrodcast", (req, res) => {
+  const userAccount = req.body.id;
+  const crop = req.body.crop;
+  const quantity = req.body.quantity;
+  const price = req.body.price;
+  db.query(
+    "INSERT INTO farmer_brodcast (public_key,crop,quantity,price,status) VALUES(?,?,?,?,?)",
+    [userAccount, crop, quantity, price, "open"],
+    (err, result) => {
+      if (result) {
+        res.send("Successfully Brodcasted");
+      }
+    }
+  );
+});
 app.get("/verify", (req, res) => {
   db.query(
     "SELECT * FROM users WHERE role_status = ?",
     ["pending"],
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
+app.get("/processorInterest/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "SELECT * FROM offers WHERE buyer = ?",
+    [id],
+
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
+app.get("/farmerbrodcastcall/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "SELECT * FROM farmer_brodcast WHERE public_key = ? && status = ?",
+    [id, "open"],
+
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
+app.get("/farmerbrodcastcallprocessor", (req, res) => {
+  db.query(
+    "SELECT * FROM farmer_brodcast WHERE  status = ?",
+    ["open"],
+
     (err, result) => {
       if (result) {
         res.send(result);

@@ -8,6 +8,7 @@ const dbSlice = createSlice({
     loggedIn: false,
     role: "",
     reload: 0,
+    address: "0xF83B03CEe4A9D33C2dC6fBe3c868dE565C56BccA",
   },
   reducers: {
     reload(state, action) {

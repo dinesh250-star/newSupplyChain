@@ -97,6 +97,49 @@ app.post("/farmerbrodcast", (req, res) => {
     }
   );
 });
+app.post("/paid", (req, res) => {
+  const crop_name = req.body.crop_name;
+  const qprice = req.body.qprice;
+  const lotId = req.body.lotId;
+  const buyer = req.body.buyer;
+  const seller = req.body.seller;
+  db.query(
+    "INSERT INTO orders (crop_name,price,crop_id,buyer,seller) VALUES(?,?,?,?,?)",
+    [crop_name, qprice, lotId, buyer, seller],
+    (err, result) => {
+      if (result) {
+        db.query(
+          "UPDATE  farmer_brodcast SET status = ? WHERE id = ?",
+          ["retailer", lotId],
+          (err, result) => {
+            if (result) {
+              db.query(
+                "UPDATE  offers SET status = ? WHERE crop_id = ?",
+                ["paid", lotId],
+                (err, result) => {
+                  if (result) {
+                    db.query(
+                      "UPDATE  insurance SET status = ? WHERE crop_id = ?",
+                      ["sold", lotId],
+                      (err, result) => {
+                        if (result) {
+                          res.send("Payment done");
+                          console.log("p");
+                        }
+                      }
+                    );
+                  }
+                }
+              );
+            } else {
+              res.send("Unable to update");
+            }
+          }
+        );
+      }
+    }
+  );
+});
 app.post("/qualityReport", (req, res) => {
   const crop = req.body.crop;
   const quantity = req.body.quantity;
@@ -136,6 +179,16 @@ app.get("/verify", (req, res) => {
       }
     }
   );
+});
+app.get("/orders/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query("SELECT * FROM orders WHERE seller = ?", [id], (err, result) => {
+    if (result) {
+      res.send(result);
+    } else {
+      res.send(false);
+    }
+  });
 });
 app.get("/pendingPayments/:id", (req, res) => {
   const id = req.params["id"];
@@ -295,6 +348,37 @@ app.put("/approve/:id", (req, res) => {
     (err, result) => {
       if (result) {
         res.send("Successfully Updated");
+      } else {
+        res.send("Unable to update");
+      }
+    }
+  );
+});
+app.put("/paidUpdate/:lotId", (req, res) => {
+  const id = req.params["lotId"];
+  db.query(
+    "UPDATE  farmer_brodcast SET status = ? WHERE id = ?",
+    ["retailer", id],
+    (err, result) => {
+      if (result) {
+        db.query(
+          "UPDATE  offers SET status = ? WHERE crop_id = ?",
+          ["paid", id],
+          (err, result) => {
+            if (result) {
+              db.query(
+                "UPDATE  insurance SET status = ? WHERE crop_id = ?",
+                ["sold", id],
+                (err, result) => {
+                  if (result) {
+                    res.send("Payment done");
+                    console.log("p");
+                  }
+                }
+              );
+            }
+          }
+        );
       } else {
         res.send("Unable to update");
       }

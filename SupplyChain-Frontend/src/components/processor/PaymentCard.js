@@ -1,10 +1,62 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Payment from "../../../src/artifacts/contracts/Payment.sol/Payment.json";
+import { ethers } from "ethers";
+import { Logger } from "ethers/lib/utils";
+import { useDispatch, useSelector } from "react-redux";
+import { dbActions } from "../../store/dbSlice";
 function PaymentCard(props) {
-  const { name, eprice, requestedQuantity, qprice, lotId } = props;
+  const { name, eprice, requestedQuantity, qprice, lotId, crop_name } = props;
   const [result, setResult] = useState("");
   const [d, setD] = useState(false);
+  const [price, setPrice] = useState(0);
+  const dispatch = useDispatch();
+  const paymentAddress = useSelector((state) => state.db.address);
+  const id = useSelector((state) => state.db.userAcc);
+
   let results;
+  useEffect(() => {
+    axios
+      .get("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=INR,")
+      .then((response) => {
+        setPrice(response.data.INR);
+      });
+  }, [price]);
+  const payment = async (e) => {
+    // pay karo
+
+    const fin = qprice / price;
+    // const fin2 = ethers.utils.parseEther(`${fin}`.toString());
+    console.log(fin);
+    const fin2 = Number(fin).toFixed(18);
+    if (typeof window.ethereum !== "undefined" && id != "") {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      const tx = {
+        from: id,
+        to: name,
+        value: ethers.utils.parseEther(`${fin2}`),
+      };
+      await signer.sendTransaction(tx).then((transaction) => {
+        console.dir(transaction);
+        alert("Payment Done!");
+      });
+      await axios
+        .post(`http://localhost:3001/paid`, {
+          crop_name: crop_name,
+          qprice: qprice,
+          lotId: lotId,
+          buyer: id,
+          seller: name,
+        })
+        .then((resp) => {
+          console.log(resp.data);
+        });
+      dispatch(dbActions.reload());
+    }
+  };
+
   const showReport = async () => {
     await axios
       .get(`http://localhost:3001/report/${lotId}`)
@@ -38,6 +90,14 @@ function PaymentCard(props) {
                 Lot ID :
               </span>
               &nbsp;&nbsp;{lotId}&nbsp;&nbsp;&nbsp;&nbsp;
+            </p>
+          </div>
+          <div className="card-footer p-2">
+            <p className="mb-0">
+              <span className="text-success text-sm font-weight-bolder">
+                Name :
+              </span>
+              &nbsp;&nbsp;{crop_name}&nbsp;&nbsp;&nbsp;&nbsp;
             </p>
           </div>
           <div className="card-footer p-2">

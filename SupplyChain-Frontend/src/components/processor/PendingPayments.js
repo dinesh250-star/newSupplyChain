@@ -35,6 +35,7 @@ function PendingPayments() {
         requestedQuantity={d.quantity}
         lotId={d.crop_id}
         qprice={d.bid_price}
+        crop_name={d.crop_name}
       ></PaymentCard>
     );
   });

@@ -246,6 +246,21 @@ app.get("/farmerbrodcastcall/:id", (req, res) => {
     }
   );
 });
+app.get("/report/:lotId", (req, res) => {
+  const id = req.params["lotId"];
+  db.query(
+    "SELECT * FROM report WHERE crop_id = ? ",
+    [id],
+
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
 app.get("/farmerbrodcastcallprocessor", (req, res) => {
   db.query(
     "SELECT * FROM farmer_brodcast WHERE  status = ?",

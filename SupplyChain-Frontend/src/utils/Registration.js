@@ -127,6 +127,7 @@ function Registration() {
                 <option value="retailer">Retailer</option>
                 <option value="consumer">Consumer</option>
                 <option value="investor">Investor</option>
+                <option value="qualitychecker">Quality Checker</option>
               </select>
               <p className="note">
                 <span style={{ color: "tomato" }}> Note: </span>

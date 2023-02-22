@@ -60,12 +60,24 @@ app.post("/offer/:idd", (req, res) => {
   const quantity = req.body.quantity;
   const price = req.body.price;
   const priceC = req.body.priceC;
+  //  insert bid once
+
   db.query(
-    "INSERT INTO offers (buyer,seller,price,crop_id,crop_name,quantity,bid_price) VALUES(?,?,?,?,?,?,?)",
-    [userAccount, seller, price, id, crop, quantity, priceC],
+    "SELECT * FROM offers WHERE buyer = ? && crop_id = ?",
+    [userAccount, id],
     (err, result) => {
-      if (result) {
-        res.send("Successfully Bidded");
+      if (result.length == 0) {
+        db.query(
+          "INSERT INTO offers (buyer,seller,price,crop_id,crop_name,quantity,bid_price,status) VALUES(?,?,?,?,?,?,?,?)",
+          [userAccount, seller, price, id, crop, quantity, priceC, "open"],
+          (err, result) => {
+            if (result) {
+              res.send("Successfully Bidded");
+            }
+          }
+        );
+      } else {
+        res.send("Already bidded");
       }
     }
   );
@@ -85,6 +97,33 @@ app.post("/farmerbrodcast", (req, res) => {
     }
   );
 });
+app.post("/qualityReport", (req, res) => {
+  const crop = req.body.crop;
+  const quantity = req.body.quantity;
+  const samples = req.body.samples;
+  const defect = req.body.defect;
+  const remarks = req.body.remarks;
+  const id = req.body.id;
+  db.query(
+    "UPDATE  insurance SET status = ? WHERE crop_id = ?",
+    ["done", id],
+    (err, result) => {
+      if (result) {
+        db.query(
+          "INSERT INTO report (crop_id,sample_size,defective,remark) VALUES(?,?,?,?)",
+          [id, samples, defect, remarks],
+          (err, result) => {
+            if (result) {
+              res.send("Successfully Added report");
+            }
+          }
+        );
+      } else {
+        res.send("Unable to update");
+      }
+    }
+  );
+});
 app.get("/verify", (req, res) => {
   db.query(
     "SELECT * FROM users WHERE role_status = ?",
@@ -98,11 +137,90 @@ app.get("/verify", (req, res) => {
     }
   );
 });
+app.get("/pendingPayments/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "SELECT offers.crop_id,offers.price, offers.seller,offers.bid_price,offers.crop_name,offers.quantity FROM offers JOIN insurance ON offers.crop_id = insurance.crop_id WHERE offers.buyer = ? && insurance.status = ?",
+    [id, "done"],
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
 app.get("/processorInterest/:id", (req, res) => {
   const id = req.params["id"];
   db.query(
     "SELECT * FROM offers WHERE buyer = ?",
-    [id],
+    [id, "open"],
+
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
+app.put("/insure/:id/:crop_id", (req, res) => {
+  const id = req.params["id"];
+  const crop_id = req.params["crop_id"];
+  const name = req.body.name;
+  const quantity = req.body.quantity;
+  db.query(
+    "SELECT * FROM insurance WHERE crop_id = ?",
+    [crop_id],
+    (err, result) => {
+      if (result.length == 0) {
+        db.query(
+          "UPDATE offers  SET status = ?  WHERE id = ?",
+          ["approve", id],
+
+          (err, result) => {
+            if (result) {
+              db.query(
+                "INSERT INTO insurance (crop_id,status,name,quantity) VALUES(?,?,?,?)",
+                [crop_id, "insured", name, quantity],
+                (err, result) => {
+                  if (result) {
+                    res.send("Successfull 1");
+                  }
+                }
+              );
+            } else {
+              res.send(false);
+            }
+          }
+        );
+      } else {
+        res.send("already insured");
+      }
+    }
+  );
+});
+app.get("/processorBids/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "SELECT * FROM offers WHERE seller = ? && status = ?",
+    [id, "open"],
+
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
+app.get("/qualityC", (req, res) => {
+  db.query(
+    "SELECT * FROM insurance WHERE status = ?",
+    ["insured"],
 
     (err, result) => {
       if (result) {
@@ -164,6 +282,21 @@ app.put("/approve/:id", (req, res) => {
         res.send("Successfully Updated");
       } else {
         res.send("Unable to update");
+      }
+    }
+  );
+});
+app.delete("/processorBidDelete/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "DELETE  FROM offers WHERE id = ?",
+    [id],
+
+    (err, result) => {
+      if (result) {
+        res.send("Successfully Rejected");
+      } else {
+        res.send("error,Something went wrong");
       }
     }
   );

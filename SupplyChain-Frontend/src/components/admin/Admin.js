@@ -4,7 +4,8 @@ import "../../css/admin.css";
 import qr from "../../images/qr.png";
 import block from "../../images/logo-ct.png";
 import { useSelector } from "react-redux";
-
+import Verification from "./Verification";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 function Admin() {
   return (
     <div>
@@ -35,9 +36,9 @@ function Admin() {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav mr-auto">
             <li className="nav-item active">
-              <a className="nav-link" href="/admin/verification">
-                <h5>Verification</h5> <span className="sr-only">(current)</span>
-              </a>
+              <Link to="/admin/verification">
+                <h1>Verification</h1>
+              </Link>
             </li>
           </ul>
         </div>

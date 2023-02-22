@@ -54,7 +54,8 @@ function Welcome() {
             resp.data != "retailer" &&
             resp.data != "consumer" &&
             resp.data != "investor" &&
-            resp.data != "admin"
+            resp.data != "admin" &&
+            resp.data != "qualitychecker"
           ) {
             alert("Register yourself or wait for approval from admin");
           } else {

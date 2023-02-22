@@ -61,7 +61,6 @@ function App() {
           {/* Admin panel */}
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/verification" element={<Verification />} />
-
           {/* Farmer Routing */}
 
           <Route path="/farmer" element={<Dashboard />}></Route>
@@ -159,7 +158,7 @@ function App() {
 
           {/* Quality Checker Routing */}
 
-          <Route path="/inspector" element={<QualityReports />}></Route>
+          <Route path="/qualityChecker" element={<QualityReports />}></Route>
 
           {/* Retailer Routing */}
 

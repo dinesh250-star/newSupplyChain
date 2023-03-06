@@ -13,8 +13,8 @@ const db = mysql.createConnection({
 app.post("/authentication", (req, res) => {
   const userAccount = req.body.userAccount;
   db.query(
-    "SELECT * FROM users WHERE public_key = ?",
-    [userAccount],
+    "SELECT * FROM users WHERE public_key = ? && role_status != ?",
+    [userAccount, "pending"],
     (err, result) => {
       if (result.length > 0) {
         res.send(result[0].role);

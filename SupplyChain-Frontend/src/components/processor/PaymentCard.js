@@ -49,6 +49,7 @@ function PaymentCard(props) {
           lotId: lotId,
           buyer: id,
           seller: name,
+          quantity: requestedQuantity,
         })
         .then((resp) => {
           console.log(resp.data);

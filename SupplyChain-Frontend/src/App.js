@@ -183,16 +183,16 @@ function App() {
 
           {/* Customer Routing */}
 
-          <Route path="/customer" element={<CustomerDashboard />}></Route>
+          <Route path="/consumer" element={<CustomerDashboard />}></Route>
           <Route
-            path="/customer/retailerbroadcast"
+            path="/consumer/retailerbroadcast"
             element={<CustomerRetailerBroadcast />}
           ></Route>
           <Route
-            path="/customer/history"
+            path="/consumer/history"
             element={<PreviousPurchases />}
           ></Route>
-          <Route path="/customer/status" element={<CustomerTracking />}></Route>
+          <Route path="/consumer/status" element={<CustomerTracking />}></Route>
         </Route>
       </Routes>
     </BrowserRouter>

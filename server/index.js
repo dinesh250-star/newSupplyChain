@@ -103,9 +103,10 @@ app.post("/paid", (req, res) => {
   const lotId = req.body.lotId;
   const buyer = req.body.buyer;
   const seller = req.body.seller;
+  const quantity = req.body.quantity;
   db.query(
-    "INSERT INTO orders (crop_name,price,crop_id,buyer,seller) VALUES(?,?,?,?,?)",
-    [crop_name, qprice, lotId, buyer, seller],
+    "INSERT INTO orders (crop_name,price,crop_id,buyer,seller,quantity,status) VALUES(?,?,?,?,?,?,?)",
+    [crop_name, qprice, lotId, buyer, seller, quantity, "no"],
     (err, result) => {
       if (result) {
         db.query(
@@ -124,7 +125,6 @@ app.post("/paid", (req, res) => {
                       (err, result) => {
                         if (result) {
                           res.send("Payment done");
-                          console.log("p");
                         }
                       }
                     );
@@ -180,6 +180,19 @@ app.get("/verify", (req, res) => {
     }
   );
 });
+app.get("/retailerBrodcast", (req, res) => {
+  db.query(
+    "SELECT * FROM processor WHERE status = ?",
+    ["open"],
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
 app.get("/orders/:id", (req, res) => {
   const id = req.params["id"];
   db.query("SELECT * FROM orders WHERE seller = ?", [id], (err, result) => {
@@ -195,6 +208,34 @@ app.get("/pendingPayments/:id", (req, res) => {
   db.query(
     "SELECT offers.crop_id,offers.price, offers.seller,offers.bid_price,offers.crop_name,offers.quantity FROM offers JOIN insurance ON offers.crop_id = insurance.crop_id WHERE offers.buyer = ? && insurance.status = ?",
     [id, "done"],
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
+app.get("/processorPurchases/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "SELECT * FROM orders WHERE buyer = ? && status = ?",
+    [id, "no"],
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
+app.get("/retailerPurchases/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "SELECT * FROM retailer WHERE buyer = ? && status = ?",
+    [id, "open"],
     (err, result) => {
       if (result) {
         res.send(result);
@@ -341,13 +382,109 @@ app.delete("/reject/:id", (req, res) => {
 });
 app.put("/approve/:id", (req, res) => {
   const id = req.params["id"];
-  console.log(id);
+
   db.query(
     "UPDATE  users SET role_status = ? WHERE id = ?",
     ["approved", id],
     (err, result) => {
       if (result) {
         res.send("Successfully Updated");
+      } else {
+        res.send("Unable to update");
+      }
+    }
+  );
+});
+app.post("/brodcastToRetailer/:id", (req, res) => {
+  const id = req.params["id"];
+  const userAccount = req.body.id;
+  const product = req.body.product;
+  const quantity = req.body.quantity;
+  const price = req.body.price;
+  db.query(
+    "UPDATE  orders SET status = ? WHERE crop_id = ?",
+    ["yes", id],
+    (err, result) => {
+      if (result) {
+        //insert
+
+        db.query(
+          "INSERT INTO processor (product_name,crop_id,quantity,price,processor,status) VALUES(?,?,?,?,?,?)",
+          [product, id, quantity, price, userAccount, "open"],
+          (err, result) => {
+            if (result) {
+              res.send("Successfully Brodcasted to retailer");
+            }
+          }
+        );
+      } else {
+        res.send("Unable to update");
+      }
+    }
+  );
+});
+app.post("/brodcastToCustomer/:id", (req, res) => {
+  const id = req.params["id"];
+  const userAccount = req.body.brodcaster;
+  const price = req.body.price;
+  let quantity;
+  let product;
+  db.query(
+    "UPDATE  retailer SET status = ? WHERE crop_id = ?",
+    ["yes", id],
+    (err, result) => {
+      if (result) {
+        db.query(
+          "SELECT * FROM retailer WHERE crop_id = ?",
+          [id],
+          (err, result) => {
+            if (result) {
+              quantity = result[0].quantity;
+              product = result[0].product_name;
+
+              db.query(
+                "INSERT INTO customer (product_name,crop_id,quantity,price,retailer,status) VALUES(?,?,?,?,?,?)",
+                [product, id, quantity, price, userAccount, "open"],
+                (err, result) => {
+                  if (result) {
+                    res.send("Successfully Brodcasted to Customer");
+                  }
+                }
+              );
+            } else {
+              res.send(false);
+            }
+          }
+        );
+      } else {
+        res.send("Unable to update");
+      }
+    }
+  );
+});
+app.post("/paidProcessor/:id", (req, res) => {
+  const id = req.params["id"];
+  const userAccount = req.body.buyer;
+  const seller = req.body.seller;
+  const product = req.body.product;
+  const quantity = req.body.quantity;
+  const price = req.body.price;
+  db.query(
+    "UPDATE  processor SET status = ? WHERE crop_id = ?",
+    ["close", id],
+    (err, result) => {
+      if (result) {
+        //insert
+
+        db.query(
+          "INSERT INTO retailer (crop_id,product_name,quantity,seller,buyer,status,price) VALUES(?,?,?,?,?,?,?)",
+          [id, product, quantity, seller, userAccount, "open", price],
+          (err, result) => {
+            if (result) {
+              res.send("Successfully Bought by retailer");
+            }
+          }
+        );
       } else {
         res.send("Unable to update");
       }

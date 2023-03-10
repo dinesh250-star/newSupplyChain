@@ -6,13 +6,14 @@ import ProcessorSidebar from "./ProcessorSidebar";
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { dbActions } from "../../store/dbSlice";
+import { useNavigate } from "react-router-dom";
 function ProcessorBroadcast() {
   const id = useSelector((state) => state.db.userAcc);
   const [result, setResult] = useState([]);
   const dispatch = useDispatch();
-  const [crop, setCrop] = useState();
+  const [crop, setCrop] = useState("");
   const [name, setName] = useState("");
-
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState();
   const [price, setPrice] = useState();
   const reload = useSelector((state) => state.db.reload);
@@ -28,7 +29,9 @@ function ProcessorBroadcast() {
   const list = result.map((d) => {
     return (
       <Fragment>
-        <option value={d.crop_id}>{d.crop_name}</option>
+        <option value={d.crop_id} key={d.crop_id}>
+          {d.crop_name}
+        </option>
       </Fragment>
     );
   });
@@ -37,7 +40,6 @@ function ProcessorBroadcast() {
   };
   const nameHandler = (e) => {
     setName(e.target.value);
-    console.log(name);
   };
   const quantityHandler = (e) => {
     setQuantity(e.target.value);
@@ -61,6 +63,7 @@ function ProcessorBroadcast() {
         })
         .then((resp) => {
           alert(resp.data);
+          navigate("/processor/ybroadcasts");
         });
       setQuantity("");
       setPrice("");
@@ -97,12 +100,10 @@ function ProcessorBroadcast() {
                     class="form-select form-select-lg mb-3"
                     required
                     onChange={cropHandler}
+                    defaultValue=""
                   >
-                    <option selected="selected" disabled="disabled">
-                      Select available crops
-                    </option>
-                    {/* <option selected>Select available crops</option>
-                    <option value="Sandy">Maize</option>
+                    <option value="">Please select</option>
+                    {/* <option value="Sandy">Maize</option>
                     <option value="Loamy">Chana</option>
                     <option value="Black">Jowar</option>
                     <option value="Red">Wheat</option>

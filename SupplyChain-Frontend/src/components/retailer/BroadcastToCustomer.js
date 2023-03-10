@@ -3,17 +3,18 @@ import RetailerSidebar from "./RetailerSidebar";
 import axios from "axios";
 import React, { Fragment } from "react";
 import { useSelector } from "react-redux";
-
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { dbActions } from "../../store/dbSlice";
 function BroadcastToCustomer() {
   const id = useSelector((state) => state.db.userAcc);
+  const navigate = useNavigate();
   const [result, setResult] = useState([]);
   const dispatch = useDispatch();
   const [name, setName] = useState("");
 
-  const [price, setPrice] = useState();
+  const [price, setPrice] = useState("");
   const reload = useSelector((state) => state.db.reload);
   let results;
   useEffect(() => {
@@ -27,7 +28,9 @@ function BroadcastToCustomer() {
   const list = result.map((d) => {
     return (
       <Fragment>
-        <option value={d.crop_id}>{d.product_name}</option>
+        <option value={d.crop_id} key={d.crop_id}>
+          {d.product_name}
+        </option>
       </Fragment>
     );
   });
@@ -50,6 +53,7 @@ function BroadcastToCustomer() {
         })
         .then((resp) => {
           alert(resp.data);
+          navigate("/retailer/processorbroadcast");
         });
 
       setPrice("");
@@ -100,6 +104,7 @@ function BroadcastToCustomer() {
                       class="form-control"
                       placeholder="Price (in ₹)"
                       required
+                      value={price}
                       onChange={priceHandler}
                     />
                   </div>

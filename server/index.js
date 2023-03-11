@@ -369,6 +369,38 @@ app.get("/farmerbrodcastcallprocessor", (req, res) => {
     }
   );
 });
+app.get("/reailerBrodcasts/:id", (req, res) => {
+  db.query(
+    "SELECT * FROM customer WHERE  status = ?",
+    ["open"],
+
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
+app.get("/checkAvailability/:id/:quantity", (req, res) => {
+  const id = req.params["id"];
+  const quantity = req.params["quantity"];
+  db.query(
+    "SELECT * FROM customer WHERE  crop_id = ? && status = ? && quantity >= ?",
+    [id, "open", quantity],
+
+    (err, result) => {
+      if (result.length > 0) {
+        res.send(result);
+      } else {
+        res.send({
+          text: "Enter a valid quantity",
+        });
+      }
+    }
+  );
+});
 app.delete("/reject/:id", (req, res) => {
   const id = req.params["id"];
   console.log(id);
@@ -419,6 +451,64 @@ app.post("/brodcastToRetailer/:id", (req, res) => {
         );
       } else {
         res.send("Unable to update");
+      }
+    }
+  );
+});
+app.post("/customerPayment/:id", (req, res) => {
+  const id = req.params["id"];
+  const userAccount = req.body.buyer;
+  const seller = req.body.seller;
+  const product = req.body.product;
+  const quantity = req.body.quantityE;
+  const price = req.body.price;
+  let newQ;
+  let tableQ;
+  db.query(
+    "INSERT INTO sales (crop_id,product_name,quantity,buyer, seller,price) VALUES(?,?,?,?,?,?)",
+    [id, product, quantity, userAccount, seller, price],
+    (err, result) => {
+      if (result) {
+        db.query(
+          "SELECT * FROM customer WHERE crop_id = ?",
+          [id],
+          (err, result) => {
+            if (result) {
+              tableQ = result[0].quantity;
+              newQ = tableQ - quantity;
+              console.log(newQ);
+              if (newQ == 0) {
+                // update with status close
+                db.query(
+                  "UPDATE  customer SET  quantity = ? , status = ?  WHERE crop_id = ?",
+                  [newQ, "close", id],
+                  (err, result) => {
+                    if (result) {
+                      res.send("Successfully Updated in customer Db1");
+                    } else {
+                      res.send("Unable to update");
+                    }
+                  }
+                );
+              } else {
+                // update only qunatity
+                db.query(
+                  "UPDATE  customer SET  quantity = ? WHERE crop_id = ?",
+                  [newQ, id],
+                  (err, result) => {
+                    if (result) {
+                      res.send("Successfully Updated in customer Db2");
+                    } else {
+                      res.send("Unable to update");
+                    }
+                  }
+                );
+              }
+            } else {
+              res.send("Unable to update");
+            }
+          }
+        );
       }
     }
   );

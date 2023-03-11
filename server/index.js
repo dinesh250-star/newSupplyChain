@@ -42,7 +42,6 @@ app.post("/registration", (req, res) => {
           [userAccount, role, 0, "pending", name, number, address],
           (err, result) => {
             if (result) {
-              console.log("success");
               res.send("Successfully regsitered. Now wait for approval");
             }
           }
@@ -202,6 +201,20 @@ app.get("/orders/:id", (req, res) => {
       res.send(false);
     }
   });
+});
+app.get("/previousPurchases/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "SELECT * FROM sales WHERE buyer = ? ORDER BY id DESC",
+    [id],
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
 });
 app.get("/pendingPayments/:id", (req, res) => {
   const id = req.params["id"];
@@ -403,7 +416,7 @@ app.get("/checkAvailability/:id/:quantity", (req, res) => {
 });
 app.delete("/reject/:id", (req, res) => {
   const id = req.params["id"];
-  console.log(id);
+
   db.query("DELETE  FROM users WHERE id = ?", [id], (err, result) => {
     if (result) {
       res.send("Deleted Successfully");
@@ -476,7 +489,7 @@ app.post("/customerPayment/:id", (req, res) => {
             if (result) {
               tableQ = result[0].quantity;
               newQ = tableQ - quantity;
-              console.log(newQ);
+
               if (newQ == 0) {
                 // update with status close
                 db.query(
@@ -599,7 +612,6 @@ app.put("/paidUpdate/:lotId", (req, res) => {
                 (err, result) => {
                   if (result) {
                     res.send("Payment done");
-                    console.log("p");
                   }
                 }
               );

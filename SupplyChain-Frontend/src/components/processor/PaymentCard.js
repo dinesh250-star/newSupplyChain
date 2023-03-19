@@ -5,6 +5,7 @@ import { ethers } from "ethers";
 import { Logger } from "ethers/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { dbActions } from "../../store/dbSlice";
+
 function PaymentCard(props) {
   const { name, eprice, requestedQuantity, qprice, lotId, crop_name } = props;
   const [result, setResult] = useState("");
@@ -42,6 +43,10 @@ function PaymentCard(props) {
         console.dir(transaction);
         alert("Payment Done!");
       });
+
+      const contract = new ethers.Contract(paymentAddress, Payment.abi, signer);
+
+      const data = await contract.updateStatus(lotId);
       await axios
         .post(`http://localhost:3001/paid`, {
           crop_name: crop_name,

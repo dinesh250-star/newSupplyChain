@@ -43,6 +43,7 @@ function RProcessorCard(props) {
         console.dir(transaction);
         alert("Payment Done!");
       });
+
       await axios
         .post(`http://localhost:3001/paidProcessor/${id}`, {
           product,

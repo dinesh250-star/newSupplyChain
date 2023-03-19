@@ -57,6 +57,7 @@ function RetailerCard(props) {
         console.dir(transaction);
         alert("Payment Done!");
       });
+
       console.log(tx);
       await axios
         .post(`http://localhost:3001/customerPayment/${crop_id}`, {

@@ -2,29 +2,46 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { dbActions } from "../../store/dbSlice";
+import { useSelector } from "react-redux";
+import Payment from "../../../src/artifacts/contracts/Payment.sol/Payment.json";
+import { ethers } from "ethers";
+import { Logger } from "ethers/lib/utils";
 
 function ProcessorRequestCard(props) {
   const { crop, processor, rquantity, qprice, id, crop_id } = props;
 
   const dispatch = useDispatch();
+  const paymentAddress = useSelector((state) => state.db.address);
+  const acc = useSelector((state) => state.db.userAcc);
   const rejectHandler = async (e) => {
-    axios
+    await axios
       .delete(`http://localhost:3001/processorBidDelete/${id}`)
       .then((resp) => {
         alert(resp.data);
       });
     dispatch(dbActions.reload());
   };
+
   const insureHandler = async (e) => {
-    axios
-      .put(`http://localhost:3001/insure/${id}/${crop_id}`, {
-        name: crop,
-        quantity: rquantity,
-      })
-      .then((resp) => {
-        alert(resp.data);
-      });
-    dispatch(dbActions.reload());
+    if (typeof window.ethereum !== "undefined" && acc != "") {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(paymentAddress, Payment.abi, signer);
+      const id = crop_id;
+      const data = await contract.updateStatus(id);
+      console.log(data);
+
+      await axios
+        .put(`http://localhost:3001/insure/${id}/${crop_id}`, {
+          name: crop,
+          quantity: rquantity,
+        })
+        .then((resp) => {
+          console.log(resp.data);
+          alert(resp.data);
+        });
+      dispatch(dbActions.reload());
+    }
   };
   return (
     <div className="col-3 mb-xl-5 mb-4">

@@ -278,13 +278,14 @@ app.put("/insure/:id/:crop_id", (req, res) => {
   const crop_id = req.params["crop_id"];
   const name = req.body.name;
   const quantity = req.body.quantity;
+
   db.query(
     "SELECT * FROM insurance WHERE crop_id = ?",
     [crop_id],
     (err, result) => {
       if (result.length == 0) {
         db.query(
-          "UPDATE offers  SET status = ?  WHERE id = ?",
+          "UPDATE offers  SET status = ?  WHERE crop_id = ?",
           ["approve", id],
 
           (err, result) => {

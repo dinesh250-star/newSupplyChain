@@ -7,13 +7,17 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { dbActions } from "../../store/dbSlice";
+import Payment from "../../../src/artifacts/contracts/Payment.sol/Payment.json";
+import { ethers } from "ethers";
+import { Logger } from "ethers/lib/utils";
+
 function BroadcastToCustomer() {
   const id = useSelector((state) => state.db.userAcc);
   const navigate = useNavigate();
   const [result, setResult] = useState([]);
   const dispatch = useDispatch();
   const [name, setName] = useState("");
-
+  const paymentAddress = useSelector((state) => state.db.address);
   const [price, setPrice] = useState("");
   const reload = useSelector((state) => state.db.reload);
   let results;
@@ -46,6 +50,18 @@ function BroadcastToCustomer() {
     if (!name) {
       alert("Select a crop");
     } else {
+      if (typeof window.ethereum !== "undefined" && id != "") {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+
+        const contract = new ethers.Contract(
+          paymentAddress,
+          Payment.abi,
+          signer
+        );
+
+        const data = contract.updateStatus(name);
+      }
       axios
         .post(`http://localhost:3001/brodcastToCustomer/${name}`, {
           price: price,

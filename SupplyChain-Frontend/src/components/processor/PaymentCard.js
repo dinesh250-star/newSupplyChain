@@ -16,6 +16,10 @@ function PaymentCard(props) {
   const id = useSelector((state) => state.db.userAcc);
 
   let results;
+  let defective;
+  let sample_size;
+  let total_rating_count;
+  let credit_score;
   useEffect(() => {
     axios
       .get("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=INR,")
@@ -23,6 +27,51 @@ function PaymentCard(props) {
         setPrice(response.data.INR);
       });
   }, [price]);
+  const creditScore = async (e) => {
+    await axios
+      .get(`http://localhost:3001/reportScore/${lotId}`)
+      .then((response) => {
+        results = response.data;
+        console.log(results);
+        sample_size = results[0].sample_size;
+        defective = results[0].defective;
+      });
+    await axios
+      .get(`http://localhost:3001/ratingScore/${name}`)
+      .then((response) => {
+        results = response.data;
+        console.log(results);
+        total_rating_count = results[0].total_rating_count + 1;
+        credit_score = results[0].credit_score;
+      });
+    const a = await calculate(
+      defective,
+      sample_size,
+      total_rating_count,
+      credit_score
+    );
+    console.log(a);
+    await axios
+      .put(`http://localhost:3001/creditUpdate/${name}`, {
+        trc: total_rating_count,
+        cs: a,
+      })
+      .then((resp) => {
+        alert(resp.data);
+      });
+  };
+  const calculate = async (
+    defective,
+    sample_size,
+    total_rating_count,
+    credit_score
+  ) => {
+    const score =
+      5 * (defective / sample_size) +
+      (total_rating_count / total_rating_count + 1) * credit_score;
+    return score;
+  };
+
   const payment = async (e) => {
     // pay karo
 
@@ -59,6 +108,7 @@ function PaymentCard(props) {
         .then((resp) => {
           console.log(resp.data);
         });
+      await creditScore();
       dispatch(dbActions.reload());
     }
   };

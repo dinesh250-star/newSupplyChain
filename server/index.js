@@ -354,6 +354,48 @@ app.get("/farmerbrodcastcall/:id", (req, res) => {
     }
   );
 });
+app.get("/reportScore/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "SELECT * FROM report WHERE crop_id = ?",
+    [id],
+
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
+app.get("/ratingScore/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "SELECT * FROM credit_score WHERE user = ? ",
+    [id],
+
+    (err, result) => {
+      if (result.length == 0) {
+        // insert
+        db.query(
+          "INSERT INTO credit_score (user,total_rating_count,credit_score) VALUES(?,?,?)",
+          [id, 0, 0],
+          (err, result) => {
+            if (result) {
+              res.send({
+                total_rating_count: 0,
+                credit_score: 0,
+              });
+            }
+          }
+        );
+      } else {
+        res.send(result);
+      }
+    }
+  );
+});
 app.get("/report/:lotId", (req, res) => {
   const id = req.params["lotId"];
   db.query(
@@ -435,6 +477,22 @@ app.put("/approve/:id", (req, res) => {
     (err, result) => {
       if (result) {
         res.send("Successfully Updated");
+      } else {
+        res.send("Unable to update");
+      }
+    }
+  );
+});
+app.put("/creditUpdate/:id", (req, res) => {
+  const id = req.params["id"];
+  const trc = req.body.trc;
+  const cs = req.body.cs;
+  db.query(
+    "UPDATE  credit_score SET total_rating_count = ? , credit_score = ? WHERE user = ?",
+    [trc, cs, id],
+    (err, result) => {
+      if (result) {
+        res.send("Successfully Updated creditScore");
       } else {
         res.send("Unable to update");
       }

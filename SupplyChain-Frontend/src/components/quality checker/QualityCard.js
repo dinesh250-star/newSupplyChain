@@ -19,6 +19,7 @@ function QualityCard(props) {
   const remark = async (e) => {
     setRemarks(e.target.value);
   };
+
   const submitHandler = async (e) => {
     e.preventDefault();
     axios
@@ -69,14 +70,14 @@ function QualityCard(props) {
               &nbsp;&nbsp;{quantity}&nbsp;&nbsp;&nbsp;&nbsp;
             </p>
           </div>
-          <div className="card-footer p-2">
+          {/* <div className="card-footer p-2">
             <p className="mb-0">
               <span className="text-success text-sm font-weight-bolder">
                 Processor ID :
               </span>
               &nbsp;&nbsp;{processor}&nbsp;&nbsp;&nbsp;&nbsp;
             </p>
-          </div>
+          </div> */}
         </div>
         <div className="farmerproduct-body mt-1">
           <form onSubmit={submitHandler}>

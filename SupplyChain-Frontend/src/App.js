@@ -47,7 +47,7 @@ import YieldBroadcast from "./components/farmer/YieldBroadcast";
 import InvestorDeals from "./components/farmer/InvestorDeals";
 import AcceptedDeals from "./components/farmer/AcceptedDeals";
 import ProtectedRoutes from "./ProtectedRoute";
-
+import ReturnToInvestor from "./components/farmer/ReturnToInvestor";
 function App() {
   return (
     <BrowserRouter>
@@ -98,7 +98,7 @@ function App() {
             element={<InvestorDeals />}
           ></Route>
           <Route path="/farmer/accepted" element={<AcceptedDeals />}></Route>
-
+          <Route path="/farmer/payback" element={<ReturnToInvestor />}></Route>
           {/* Investor */}
 
           <Route path="/investor" element={<InvestorHome />}></Route>

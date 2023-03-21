@@ -24,6 +24,35 @@ app.post("/authentication", (req, res) => {
     }
   );
 });
+app.post("/microfinance", (req, res) => {
+  const id = req.body.id;
+  const price = req.body.price;
+  const quantity = req.body.quantity;
+  const name = req.body.name;
+  const dates = req.body.dates;
+  db.query(
+    "SELECT * FROM loan WHERE user = ?  && status != ?",
+    [id, "paid"],
+    (err, result) => {
+      console.log(result);
+      if (result.length === 0) {
+        db.query(
+          "INSERT INTO loan (user,crop_name,quantity,exp_price,yield_date,holding,amount,status,days_left) VALUES(?,?,?,?,?,?,?,?,?)",
+          [id, name, quantity, price, dates, 0, 0, "open", dates],
+          (err, result) => {
+            if (result) {
+              res.send("Successfull 3");
+            } else {
+              res.send("Something went wrong");
+            }
+          }
+        );
+      } else {
+        res.send("You have already taken a loan");
+      }
+    }
+  );
+});
 app.post("/registration", (req, res) => {
   const userAccount = req.body.userAccount;
   const name = req.body.name;
@@ -192,7 +221,36 @@ app.get("/retailerBrodcast", (req, res) => {
     }
   );
 });
+app.get("/loanRequest", (req, res) => {
+  db.query("SELECT * FROM loan WHERE status = ?", ["open"], (err, result) => {
+    if (result) {
+      res.send(result);
+    } else {
+      res.send(false);
+    }
+  });
+});
 app.get("/orders/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query("SELECT * FROM orders WHERE seller = ?", [id], (err, result) => {
+    if (result) {
+      res.send(result);
+    } else {
+      res.send(false);
+    }
+  });
+});
+app.get("/requestCreditScore/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query("SELECT * FROM credit_score WHERE user = ?", [id], (err, result) => {
+    if (result) {
+      res.send(result);
+    } else {
+      res.send(false);
+    }
+  });
+});
+app.get("/history/:id", (req, res) => {
   const id = req.params["id"];
   db.query("SELECT * FROM orders WHERE seller = ?", [id], (err, result) => {
     if (result) {
@@ -413,7 +471,7 @@ app.get("/report/:lotId", (req, res) => {
 });
 app.get("/farmerbrodcastcallprocessor", (req, res) => {
   db.query(
-    "SELECT * FROM farmer_brodcast WHERE  status = ?",
+    "SELECT * FROM farmer_brodcast WHERE  status = ? ORDER BY id DESC",
     ["open"],
 
     (err, result) => {
@@ -474,6 +532,22 @@ app.put("/approve/:id", (req, res) => {
   db.query(
     "UPDATE  users SET role_status = ? WHERE id = ?",
     ["approved", id],
+    (err, result) => {
+      if (result) {
+        res.send("Successfully Updated");
+      } else {
+        res.send("Unable to update");
+      }
+    }
+  );
+});
+app.put("/investorRequest/:id", (req, res) => {
+  const id = req.params["id"];
+  const holding = req.body.holding;
+  const amount = req.body.amount;
+  db.query(
+    "UPDATE  loan SET holding = ?, amount = ? WHERE user = ?",
+    [holding, amount, id],
     (err, result) => {
       if (result) {
         res.send("Successfully Updated");

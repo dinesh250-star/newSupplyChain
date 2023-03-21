@@ -583,6 +583,21 @@ app.put("/approve/:id", (req, res) => {
     }
   );
 });
+app.put("/paidFarmerByInvestor/:id", (req, res) => {
+  const id = req.params["id"];
+
+  db.query(
+    "UPDATE  loan SET status = ? WHERE user = ? && status = ?",
+    ["processed", id, "pending"],
+    (err, result) => {
+      if (result) {
+        res.send("Successfully Updated");
+      } else {
+        res.send("Unable to update");
+      }
+    }
+  );
+});
 app.put("/updateInvestment/:id", (req, res) => {
   const id = req.params["id"];
 

@@ -1,8 +1,55 @@
 import React from "react";
 
+import { useState, useEffect } from "react";
+import axios from "axios";
+import Payment from "../../../src/artifacts/contracts/Payment.sol/Payment.json";
+import { ethers } from "ethers";
+import { Logger } from "ethers/lib/utils";
+import { useDispatch, useSelector } from "react-redux";
+import { dbActions } from "../../store/dbSlice";
 function InvestorPaymentCard(props) {
   const { farmerId, crop, amount, yieldId, share, quantity, price } = props;
+  const dispatch = useDispatch();
+  const paymentAddress = useSelector((state) => state.db.address);
+  const userId = useSelector((state) => state.db.userAcc);
+  const [priceE, setPriceE] = useState(0);
+  let results;
+  useEffect(() => {
+    axios
+      .get("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=INR,")
+      .then((response) => {
+        setPriceE(response.data.INR);
+      });
+  }, [priceE]);
+  const paymentHandler = async (e) => {
+    // pay karo
 
+    const fin = price / priceE;
+    // const fin2 = ethers.utils.parseEther(`${fin}`.toString());
+    console.log(fin);
+    const fin2 = Number(fin).toFixed(18);
+    if (typeof window.ethereum !== "undefined") {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      const tx = {
+        from: userId,
+        to: farmerId,
+        value: ethers.utils.parseEther(`${fin2}`),
+      };
+      await signer.sendTransaction(tx).then((transaction) => {
+        console.dir(transaction);
+        alert("Payment Done!");
+      });
+
+      await axios
+        .put(`http://localhost:3001/paidFarmerByInvestor/${farmerId}`)
+        .then((resp) => {
+          console.log(resp.data);
+        });
+      dispatch(dbActions.reload());
+    }
+  };
   return (
     <div className="col-3">
       <div className="card">
@@ -65,9 +112,10 @@ function InvestorPaymentCard(props) {
           </div>
           <div class="text-center mb-1">
             <button
-              type="submit"
+              type="click"
               name="broadcastCrop"
               class="btn btn-lg bg-gradient-success btn-lg w-100 mt-4 mb-0"
+              onClick={paymentHandler}
             >
               Pay ₹{amount}
             </button>

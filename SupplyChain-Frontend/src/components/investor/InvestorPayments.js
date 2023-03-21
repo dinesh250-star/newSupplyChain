@@ -1,27 +1,53 @@
-import React from 'react'
-import SubNav from '../../utils/SubNav'
-import InvestorPaymentCard from './InvestorPaymentCard'
-import InvestorSidebar from './InvestorSidebar'
-
+import React from "react";
+import SubNav from "../../utils/SubNav";
+import InvestorPaymentCard from "./InvestorPaymentCard";
+import InvestorSidebar from "./InvestorSidebar";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import axios from "axios";
 function InvestorPayments() {
+  const [result, setResult] = useState([]);
+  const id = useSelector((state) => state.db.userAcc);
+  const reload = useSelector((state) => state.db.reload);
+  let results;
+  useEffect(() => {
+    axios
+      .get(`http://localhost:3001/requestPendingPayments`)
+      .then((response) => {
+        results = response.data;
+        setResult(results);
+        console.log(response.data);
+      });
+  }, [reload]);
+  const list = result.map((d) => {
+    return (
+      <InvestorPaymentCard
+        quantity={d.quantity}
+        farmerId={d.user}
+        crop={d.crop_name}
+        price={d.exp_price}
+        amount={d.amount}
+        share={d.holding}
+        yieldId={d.yield_date}
+      ></InvestorPaymentCard>
+    );
+  });
   return (
-    <div className='home-body'>
-        <div className='left-body'>
-            <InvestorSidebar payment='1'></InvestorSidebar>
+    <div className="home-body">
+      <div className="left-body">
+        <InvestorSidebar payment="1"></InvestorSidebar>
+      </div>
+      <div className="right-body">
+        <SubNav heading="Pending Payments"></SubNav>
+        <div className="broadcast-body">
+          <h3>Pending Payments!</h3>
+          <div className="container-fluid py-4">
+            <div className="row">{list}</div>
+          </div>
         </div>
-        <div className='right-body'>
-            <SubNav heading='Pending Payments'></SubNav>
-            <div className='broadcast-body'>
-                <h3>Pending Payments!</h3>
-                <div className='container-fluid py-4'>
-                    <div className='row'>
-                        <InvestorPaymentCard farmerId='0xA9859aD4A9d4EcE7617C8D2ab8940E983ebd309C' farmer='Mohit' crop='Bajra' amount={1000} share={5} yieldId='jdfkajdka111'></InvestorPaymentCard>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
-  )
+  );
 }
 
-export default InvestorPayments
+export default InvestorPayments;

@@ -208,6 +208,19 @@ app.get("/verify", (req, res) => {
     }
   );
 });
+app.get("/requestPendingPayments", (req, res) => {
+  db.query(
+    "SELECT * FROM loan WHERE status = ?",
+    ["pending"],
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
 app.get("/retailerBrodcast", (req, res) => {
   db.query(
     "SELECT * FROM processor WHERE status = ?",
@@ -239,6 +252,20 @@ app.get("/orders/:id", (req, res) => {
       res.send(false);
     }
   });
+});
+app.get("/investorRequests/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "SELECT * FROM loan WHERE user = ? && status = ?",
+    [id, "open"],
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
 });
 app.get("/requestCreditScore/:id", (req, res) => {
   const id = req.params["id"];
@@ -526,12 +553,42 @@ app.delete("/reject/:id", (req, res) => {
     }
   });
 });
+app.delete("/rejectInvestment/:id", (req, res) => {
+  const id = req.params["id"];
+
+  db.query(
+    "DELETE  FROM loan WHERE user = ? && status = ?",
+    [id, "open"],
+    (err, result) => {
+      if (result) {
+        res.send("Deleted Successfully");
+      } else {
+        res.send("Unable to Delete");
+      }
+    }
+  );
+});
 app.put("/approve/:id", (req, res) => {
   const id = req.params["id"];
 
   db.query(
     "UPDATE  users SET role_status = ? WHERE id = ?",
     ["approved", id],
+    (err, result) => {
+      if (result) {
+        res.send("Successfully Updated");
+      } else {
+        res.send("Unable to update");
+      }
+    }
+  );
+});
+app.put("/updateInvestment/:id", (req, res) => {
+  const id = req.params["id"];
+
+  db.query(
+    "UPDATE  loan SET status  = ? WHERE user = ? && status = ?",
+    ["pending", id, "open"],
     (err, result) => {
       if (result) {
         res.send("Successfully Updated");

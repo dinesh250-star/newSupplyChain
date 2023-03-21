@@ -253,6 +253,20 @@ app.get("/orders/:id", (req, res) => {
     }
   });
 });
+app.get("/payback/:id", (req, res) => {
+  const id = req.params["id"];
+  db.query(
+    "SELECT * FROM loan WHERE user = ? && status = ?",
+    [id, "processed"],
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+});
 app.get("/investorRequests/:id", (req, res) => {
   const id = req.params["id"];
   db.query(
@@ -589,6 +603,21 @@ app.put("/paidFarmerByInvestor/:id", (req, res) => {
   db.query(
     "UPDATE  loan SET status = ? WHERE user = ? && status = ?",
     ["processed", id, "pending"],
+    (err, result) => {
+      if (result) {
+        res.send("Successfully Updated");
+      } else {
+        res.send("Unable to update");
+      }
+    }
+  );
+});
+app.put("/paidToInvestor/:id", (req, res) => {
+  const id = req.params["id"];
+
+  db.query(
+    "UPDATE  loan SET status = ? WHERE user = ? && status = ?",
+    ["paid", id, "processed"],
     (err, result) => {
       if (result) {
         res.send("Successfully Updated");
